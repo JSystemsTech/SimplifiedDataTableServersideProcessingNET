@@ -32,7 +32,7 @@ namespace PerformanceTesterApp
         public static void Main()
         {
             
-            var data = Enumerable.Repeat(new MyClass(), 1000000);
+            var data = Enumerable.Repeat(new MyClass(), 100000);
             DateTime a = DateTime.Now;
             var test = data.SerializeData();
             DateTime b = DateTime.Now;

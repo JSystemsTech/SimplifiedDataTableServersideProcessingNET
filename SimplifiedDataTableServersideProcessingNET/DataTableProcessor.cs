@@ -116,7 +116,8 @@ namespace SimplifiedDataTableServersideProcessingNET
             Func<T, object> getRowAttr = null)
             where T : class
         {
-            List<IDictionary<string, object>> dataForTable = new List<IDictionary<string, object>>();
+            IDictionary<string, object>[] dataForTable = new IDictionary<string, object>[data.Count()];
+            int index = 0;
             foreach (T model in data)
             {
                 ConcurrentDictionary<string, object> item = new ConcurrentDictionary<string, object>();
@@ -140,7 +141,8 @@ namespace SimplifiedDataTableServersideProcessingNET
                 {
                     item.TryAdd(propInfo.Name, propInfo.GetValue(model));
                 }
-                dataForTable.Add(item);
+                dataForTable[index] = item;
+                index++;
             }
             return dataForTable;
         }
