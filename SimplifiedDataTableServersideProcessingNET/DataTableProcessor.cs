@@ -7,18 +7,35 @@ using System.Text.RegularExpressions;
 
 namespace SimplifiedDataTableServersideProcessingNET
 {
+    
     public class PropertyInfo<T>
         where T : class
     {
-        public static IEnumerable<PropertyInfo> Properties = typeof(T).GetProperties(BindingFlags.Instance | BindingFlags.Public);
+        private static ConcurrentDictionary<string, Func<T, object>> Getters { get; set; }
+        private static IEnumerable<PropertyInfo> _Properties { get; set; }
+        public static IEnumerable<PropertyInfo> Properties = _Properties ?? typeof(T).GetProperties(BindingFlags.Instance | BindingFlags.Public);
+        public static object GetValue(T model, string name)
+        {
+            if (Getters == null)
+            {
+                Getters = new ConcurrentDictionary<string, Func<T, object>>();
+            }
+            if (!Getters.ContainsKey(name) && Properties.Any(p => p.Name == name))
+            {
+                Func<T, object> newGetter = (Func<T, object>)Delegate.CreateDelegate(typeof(Func<T, object>), null, typeof(T).GetProperty(name).GetGetMethod());
+                Getters.TryAdd(name, newGetter);
+            }
+            if(Getters.TryGetValue(name, out Func<T, object> getter))
+            {
+                return getter(model);
+            }
+            return null;
+        }
     }
     public static class DataTableExtensions
     {
         private static object GetValue<T>(this T model, string name) where T : class
-        {
-            var prop = PropertyInfo<T>.Properties.First(p => p.Name == name);
-            return prop.GetValue(model, null);
-        }
+            => PropertyInfo<T>.GetValue(model, name);
         private static string GetValueAsString<T>(this T model, string name) where T : class
         {
             object value = model.GetValue(name);
@@ -91,7 +108,7 @@ namespace SimplifiedDataTableServersideProcessingNET
                 return new DataTableResponse(request, e);
             }
         }
-        private static IEnumerable<IDictionary<string, object>> SerializeData<T>(
+        public static IEnumerable<IDictionary<string, object>> SerializeData<T>(
             this IEnumerable<T> data,
             Func<T, string> getRowId = null,
             Func<T, string> getRowClass = null,
