@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace PerformanceTesterApp
 {
-    public class MyClass//:IMappable
+    public class MyClass:IMappable
     {
         public Guid Guid { get; set; }
         public DateTime DateTime { get; set; }
@@ -27,17 +27,17 @@ namespace PerformanceTesterApp
             Text2 = "Text2";
         }
 
-        //public object MapValue(string propertyName)
-        //{
-        //    return propertyName == "Guid" ? Guid :
-        //    propertyName == "DateTime" ? DateTime :
-        //    propertyName == "Text" ? Text :
-        //    propertyName == "Number" ? Number :
-        //    propertyName == "Guid2" ? Guid2 :
-        //    propertyName == "DateTime2" ? DateTime2 :
-        //    propertyName == "Text2" ? Text2 :
-        //    propertyName == "Number2" ? Number2 : (object)null;
-        //}
+        public object MapValue(string propertyName)
+        {
+            return propertyName == "Guid" ? Guid :
+            propertyName == "DateTime" ? DateTime :
+            propertyName == "Text" ? Text :
+            propertyName == "Number" ? Number :
+            propertyName == "Guid2" ? Guid2 :
+            propertyName == "DateTime2" ? DateTime2 :
+            propertyName == "Text2" ? Text2 :
+            propertyName == "Number2" ? Number2 : (object)null;
+        }
 
     }
     public class Program

@@ -15,10 +15,6 @@ namespace SimplifiedDataTableServersideProcessingNET
     }
     public class Helper
     {
-        private IDictionary<string, Func<object, object>> PropertyGetters { get; set; }
-
-        private IDictionary<string, Action<object, object>> PropertySetters { get; set; }
-
         public static Func<object, object> CreateGetter(PropertyInfo property)
         {
             if (property == null)
@@ -40,44 +36,15 @@ namespace SimplifiedDataTableServersideProcessingNET
             return getterDelegate;
         }
 
-        public static Action<object, object> CreateSetter(PropertyInfo property)
-        {
-            if (property == null)
-                throw new ArgumentNullException("property");
-
-            var setter = property.GetSetMethod();
-            if (setter == null)
-                throw new ArgumentException("The specified property does not have a public setter.");
-
-            var genericMethod = typeof(Helper).GetMethod("CreateSetterGeneric");
-            MethodInfo genericHelper = genericMethod.MakeGenericMethod(property.DeclaringType, property.PropertyType);
-            return (Action<object, object>)genericHelper.Invoke(null, new object[] { setter });
-        }
-
-        public static Action<object, object> CreateSetterGeneric<T, V>(MethodInfo setter) where T : class
-        {
-            Action<T, V> setterTypedDelegate = (Action<T, V>)Delegate.CreateDelegate(typeof(Action<T, V>), setter);
-            Action<object, object> setterDelegate = (Action<object, object>)((object instance, object value) => { setterTypedDelegate((T)instance, (V)value); });
-            return setterDelegate;
-        }
-
-        public Helper(Type type)
-        {
-            var Properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                        .Where(p => p.CanRead && !p.GetIndexParameters().Any()).AsEnumerable();
-            PropertyGetters = Properties.ToDictionary(p => p.Name, p => CreateGetter(p));
-            PropertySetters = Properties.Where(p => p.GetSetMethod() != null)
-                .ToDictionary(p => p.Name, p => CreateSetter(p));
-        }
     }
     public class PropertyInfo<T>
         where T : class
     {
-        private static Helper _Helper { get; set; }
-        private static Helper Helper = _Helper ?? new Helper(typeof(T));
         private static ConcurrentDictionary<string, Func<object, object>> Getters { get; set; }
         private static IEnumerable<PropertyInfo> _Properties { get; set; }
         public static IEnumerable<PropertyInfo> Properties = _Properties ?? typeof(T).GetProperties(BindingFlags.Instance | BindingFlags.Public);
+        private static IEnumerable<string> _PropertyNames { get; set; }
+        public static IEnumerable<string> PropertyNames = _PropertyNames ?? Properties.Select(p=>p.Name);
         public static object GetValue(T model, string name)
         {
             if (model is IMappable mappableModel)
@@ -206,9 +173,9 @@ namespace SimplifiedDataTableServersideProcessingNET
                 {
                     item.Add("DT_RowAttr", getRowAttr(model));
                 }
-                foreach (var propInfo in PropertyInfo<T>.Properties)
+                foreach (var name in PropertyInfo<T>.PropertyNames)
                 {
-                    item.Add(propInfo.Name, propInfo.GetValue(model));
+                    item.Add(name, model.GetValue(name));
                 }
                 
                 dataForTable[index] = item;
