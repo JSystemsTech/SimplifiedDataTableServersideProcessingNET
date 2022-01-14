@@ -43,17 +43,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DataTableProcessor.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\SimplifiedDataTableServersideProcessingNET\SimplifiedDataTableServersideProcessingNET.csproj">
-      <Project>{6c8eb3ff-db3c-4bde-bb91-ccb45810e9e1}</Project>
-      <Name>SimplifiedDataTableServersideProcessingNET</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
